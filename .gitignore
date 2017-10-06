@@ -1,0 +1,6 @@
+*.pyc
+*.swp
+*.swo
+/venv
+/tests/test-database.sqlite3
+/tests/sqllike_filter_tests/migrations
