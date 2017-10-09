@@ -2,13 +2,13 @@
 
 from rest_framework import generics, renderers
 
-from rf_sqllike_filter.filters import SQLLikeFilterBackend
+from rf_sqllike_filter import SQLLikeFilterBackend
 
 from . import models
 from . import serializers
 
-class SomeListView(generics.ListAPIView):
-    queryset = models.SomeModel.objects.all()
-    serializer_class = serializers.SomeSerializer
+class AnimalListView(generics.ListAPIView):
+    queryset = models.AnimalModel.objects.all()
+    serializer_class = serializers.AnimalSerializer
     renderer_classes = ( renderers.JSONRenderer,)
     filter_backends = (SQLLikeFilterBackend,)

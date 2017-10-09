@@ -4,8 +4,8 @@ from rest_framework import serializers
 
 from . import models
 
-class SomeSerializer(serializers.ModelSerializer):
+class AnimalSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = models.SomeModel
+        model = models.AnimalModel
         fields = "__all__"
