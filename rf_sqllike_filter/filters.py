@@ -43,7 +43,12 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
     # cast functions for the different types of database model fields
     value_casts = {
         fields.IntegerField: casts.cast_int,
-        fields.FloatField: casts.cast_float
+        fields.AutoField: casts.cast_int,
+        fields.FloatField: casts.cast_float,
+        fields.DateField: casts.cast_date,
+        fields.DateTimeField: casts.cast_datetime,
+        fields.TextField: casts.cast_text,
+        fields.CharField: casts.cast_text,
     }
 
     def __init__(self):
@@ -61,7 +66,7 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
             self.parsed_sort = make_token_keyword_filter()(sqlparse.parse(sort_value)[0].tokens)
 
     def get_filterable_fields(self, model):
-        return dict([(f.name, f) for f in model._meta.fields])
+        return dict([(f.name, f) for f in model._meta.fields if f.__class__ in self.value_casts])
 
     def _value_cast(self, field, value):
         try:
@@ -105,7 +110,7 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
                     elif st.ttype in T.Literal.Number:
                         c_values.append(st.value)
                     elif st.ttype == T.Operator.Comparison:
-                        # implements the field lookups documented under
+                        # implements part of the field lookups documented under
                         # https://docs.djangoproject.com/en/1.11/ref/models/querysets/#field-lookups
                         if st.value == "=":
                             c_op = "exact"
@@ -127,7 +132,6 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
                         else:
                             raise BadQuery("Unknown identifier \"{0}\"".format(st.value))
                     else:
-                        dump(st)
                         raise BadQuery("Comparisons do not allow the subexpression \"{0}\"".format(st.value))
 
                 if len(c_values) > 1 or len(c_fields) < 1:
@@ -140,10 +144,11 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
             elif isinstance(token, sql.Parenthesis):
                 raise BadQuery("Nesting with parenthesises is not supported: {0}".format(token.value))
             else:
-                raise BadQuery("Unsupported query: {0}".format(token.value))
+                raise BadQuery("Unsupported part of query: {0}".format(token.value))
 
     def build_filter(self, model):
         fields = self.get_filterable_fields(model)
+        #dump(self.parsed_where)
         return self._to_filter(self.parsed_where, fields)
 
     def filter_queryset(self, request, queryset, view):
@@ -151,7 +156,6 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
         f = self.build_filter(queryset.model)
 
         if type(f) == list:
-            #print queryset.filter(*f).query
             return queryset.filter(*f)
         return queryset.filter(f)
 
