@@ -2,7 +2,7 @@
 
 from rest_framework import filters, exceptions
 
-from django.db.models import Q, F, fields
+from django.db.models import Q, F, fields as model_fields
 
 from .exceptions import BadQuery
 from . import casts, parser
@@ -17,14 +17,14 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
 
     # cast functions for the different types of database model fields
     value_casts = {
-        fields.IntegerField: casts.cast_int,
-        fields.AutoField: casts.cast_int,
-        fields.FloatField: casts.cast_float,
-        fields.DateField: casts.cast_date,
-        fields.DateTimeField: casts.cast_datetime,
-        fields.TextField: casts.cast_text,
-        fields.CharField: casts.cast_text,
-        fields.BooleanField: casts.cast_boolean,
+        model_fields.IntegerField: casts.cast_int,
+        model_fields.AutoField: casts.cast_int,
+        model_fields.FloatField: casts.cast_float,
+        model_fields.DateField: casts.cast_date,
+        model_fields.DateTimeField: casts.cast_datetime,
+        model_fields.TextField: casts.cast_text,
+        model_fields.CharField: casts.cast_text,
+        model_fields.BooleanField: casts.cast_boolean,
     }
 
     def __init__(self):
@@ -40,11 +40,15 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
             return value
         return cast_callable(value, field)
 
-
     def build_filter(self, model, filter_value_raw):
         filters = []
         fields = self.get_filterable_fields(model)
         filter_parser = parser.build_filter_parser(fields.keys())
+
+        def require_text_fields(parser_fields, operator_name):
+            for pf in parser_fields:
+                if type(fields[pf.name]) not in (model_fields.TextField, model_fields.CharField):
+                    raise BadQuery("The operator \"{0}\" is only allowed with text fields".format(operator_name))
 
         join_op = parser.LogicalOp('and')
         for q in filter_parser.parseString(filter_value_raw, parseAll=True).asList():
@@ -75,6 +79,24 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
                     model_op = "lt"
                 elif op.op == "<=":
                     model_op = "lte"
+                elif op.op == 'contains':
+                    require_text_fields(q_fields, 'contains')
+                    model_op = 'contains'
+                elif op.op == 'icontains':
+                    require_text_fields(q_fields, 'icontains')
+                    model_op = 'icontains'
+                elif op.op == 'startswith':
+                    require_text_fields(q_fields, 'startswith')
+                    model_op = 'startswith'
+                elif op.op == 'istartswith':
+                    require_text_fields(q_fields, 'istartswith')
+                    model_op = 'istartswith'
+                elif op.op == 'endswith':
+                    require_text_fields(q_fields, 'endswith')
+                    model_op = 'endswith'
+                elif op.op == 'iendswith':
+                    require_text_fields(q_fields, 'iendswith')
+                    model_op = 'iendswith'
                 else:
                     raise BadQuery("Unsupported operator: \"{0}\"".format(op.op))
 

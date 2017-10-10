@@ -97,6 +97,12 @@ def build_filter_parser(field_names):
             | Keyword('<=')
             | Keyword('<')
             | Keyword('>')
+            | CaselessKeyword('contains')
+            | CaselessKeyword('icontains')
+            | CaselessKeyword('startswith')
+            | CaselessKeyword('istartswith')
+            | CaselessKeyword('endswith')
+            | CaselessKeyword('iendswith')
         )
     comparison_operator.setParseAction(lambda x: Operator(x[0]))
 

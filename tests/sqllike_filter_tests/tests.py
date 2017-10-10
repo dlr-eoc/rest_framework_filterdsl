@@ -88,12 +88,11 @@ class TestSQLLikeFilters(BaseTestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'tortoise')
 
-    @skip("support needs to be implemented. Like is not a Comparison in sqlparser")
     def test_get_filtered_contains_string(self):
         response = self.client.get(self.url_animal_list, data={
                 'filter': "name contains 'rtoi'"
         })
-        print response.data
+        #print response.data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'tortoise')
