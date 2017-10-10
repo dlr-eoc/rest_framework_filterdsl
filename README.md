@@ -1,7 +1,8 @@
 # A filtering and sorting DSL for the [Django REST framework](http://www.django-rest-framework.org/)
 
-This package provides a small [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language) (DSL) to allow filtering
-and sorting the views provided using Django REST framework by GET parameters.
+This package provides a small [domain-specific language](https://en.wikipedia.org/wiki/Domain-specific_language)
+(DSL) for filtering and sorting the views provided using Django
+REST framework by GET parameters.
 
 The filtering and sorting is performed by Django's querysets, so the
 [SQL injection
