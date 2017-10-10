@@ -120,6 +120,16 @@ class TestFilters(BaseTestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'tortoise')
 
+    def test_get_filtered_not_contains_string(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "name not contains 'rtoi'"
+        })
+        #print response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+        animals = set([x['name'] for x in response.data])
+        self.assertEqual(set(('dog', 'duck')), animals)
+
     def test_get_filtered_equal_boolean(self):
         response = self.client.get(self.url_animal_list, data={
                 'filter': "is_bird = true"

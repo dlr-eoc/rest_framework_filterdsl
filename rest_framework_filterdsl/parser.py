@@ -49,10 +49,20 @@ class Field(Token):
     def name(self):
         return self.value.lower()
 
-class Operator(Token):
+class Negation(Token):
+    pass
+
+class Operator(GroupToken):
     @property
     def op(self):
-        return self.value.lower()
+        for t in self.tokens:
+            if not isinstance(t, Negation):
+                return t.lower()
+
+    @property
+    def negate(self):
+        return self._filter_class_first(Negation) is not None
+
 
 class Value(Token):
     def __repr__(self):
@@ -96,7 +106,7 @@ class SortDirective(GroupToken):
     @property
     def field(self):
         return self._filter_class_first(Field)
-    
+
     @property
     def direction(self):
         return self._filter_class_first(SortDirection) or SortDirection('+')
@@ -111,21 +121,27 @@ def _build_field_expr(field_names):
 def build_filter_parser(field_names):
     field = _build_field_expr(field_names)
 
-    comparison_operator = (
+    negation = CaselessKeyword('not')
+    negation.setParseAction(lambda x: Negation(x[0]))
+
+    comparison_operator = Group(
             Keyword('=')
-            | Keyword('!=')
-            | Keyword('>=')
-            | Keyword('<=')
-            | Keyword('<')
-            | Keyword('>')
-            | CaselessKeyword('contains')
-            | CaselessKeyword('icontains')
-            | CaselessKeyword('startswith')
-            | CaselessKeyword('istartswith')
-            | CaselessKeyword('endswith')
-            | CaselessKeyword('iendswith')
+            ^ Keyword('!=')
+            ^ Keyword('>=')
+            ^ Keyword('<=')
+            ^ Keyword('<')
+            ^ Keyword('>')
+            ^ (Optional(negation) + (
+                    CaselessKeyword('contains')
+                    ^ CaselessKeyword('icontains')
+                    ^ CaselessKeyword('startswith')
+                    ^ CaselessKeyword('istartswith')
+                    ^ CaselessKeyword('endswith')
+                    ^ CaselessKeyword('iendswith')
+                    )
+             )
         )
-    comparison_operator.setParseAction(lambda x: Operator(x[0]))
+    comparison_operator.setParseAction(lambda x: Operator(x))
 
     plusorminus = Literal('+') | Literal('-')
 

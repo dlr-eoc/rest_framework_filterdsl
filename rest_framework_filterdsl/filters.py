@@ -56,7 +56,6 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
                 q_fields = q.fields
                 left = q_fields[0]
                 op = q.operator
-                negate = False
 
                 right = None
                 if len(q_fields) > 1:
@@ -66,6 +65,7 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
 
                 # find the matching operator in djangos ORM syntax
                 model_op = None
+                negate = op.negate
                 if op.op == "=":
                     model_op = "exact"
                 elif op.op == "!=":
