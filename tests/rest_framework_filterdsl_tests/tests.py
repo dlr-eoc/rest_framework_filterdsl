@@ -29,7 +29,7 @@ class BaseTestCase(TestCase):
         )
         models.AnimalModel.objects.create(
                 name="duck",
-                age=3,
+                age=1,
                 legs=2,
                 birthday=timezone.now() - timedelta(days=365*3),
                 is_bird=True
@@ -133,6 +133,14 @@ class TestFilters(BaseTestCase):
     def test_get_filtered_equal_boolean(self):
         response = self.client.get(self.url_animal_list, data={
                 'filter': "is_bird = true"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'duck')
+
+    def test_get_filtered_compare_fields(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "age < legs"
         })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
