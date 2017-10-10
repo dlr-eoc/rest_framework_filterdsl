@@ -7,4 +7,4 @@ class AnimalModel(models.Model):
     age = models.IntegerField()
     legs = models.IntegerField()
     birthday = models.DateTimeField()
-
+    is_bird = models.BooleanField()
