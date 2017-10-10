@@ -4,7 +4,7 @@ from django.contrib.staticfiles import views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'', include('sqllike_filter_tests.urls')),
+    url(r'', include('rest_framework_filterdsl_tests.urls')),
     url(r'^static/(?P<path>.*)$', views.serve),
 
 ]

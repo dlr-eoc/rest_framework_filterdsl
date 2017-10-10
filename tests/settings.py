@@ -19,7 +19,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'rest_framework',
-    'sqllike_filter_tests'
+    'rest_framework_filterdsl_tests'
 )
 
 MIDDLEWARE_CLASSES = [

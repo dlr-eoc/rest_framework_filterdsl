@@ -2,7 +2,7 @@
 
 from rest_framework import generics, renderers
 
-from rf_sqllike_filter import SQLLikeFilterBackend
+from rest_framework_filterdsl import SQLLikeFilterBackend
 
 from . import models
 from . import serializers
