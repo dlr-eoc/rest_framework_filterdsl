@@ -75,6 +75,15 @@ class TestFilters(BaseTestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'tortoise')
 
+    def test_get_filtered_equal_pk(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "id = 1"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'dog')
+
+
     def test_get_filtered_not_equal_int(self):
         response = self.client.get(self.url_animal_list, data={
                 'filter': "age != 132"
@@ -161,3 +170,26 @@ class TestSorting(BaseTestCase):
         self.assertEqual(response.data[0]['name'], 'dog')
         self.assertEqual(response.data[1]['name'], 'tortoise')
         self.assertEqual(response.data[2]['name'], 'duck')
+
+    def test_sort_by_pk_direction_minus(self):
+        response = self.client.get(self.url_animal_list, data={
+                'sort': "-id"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], 'duck')
+        self.assertEqual(response.data[1]['name'], 'tortoise')
+        self.assertEqual(response.data[2]['name'], 'dog')
+
+
+class TestSortingAndFiltering(BaseTestCase):
+    def test_sort_and_filter(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "name startswith 'd'",
+                'sort': "-id"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['name'], 'duck')
+        self.assertEqual(response.data[1]['name'], 'dog')
+

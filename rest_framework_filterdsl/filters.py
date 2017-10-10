@@ -135,16 +135,18 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         fields = self.get_filterable_fields(queryset.model)
 
-        filter_value_raw = request.GET.get(self.filter_param_name, "")
-        if filter_value_raw != "":
-            filters = self.build_filter(fields, filter_value_raw)
-            queryset = queryset.filter(*filters)
+        if self.filter_param_name:
+            filter_value_raw = request.GET.get(self.filter_param_name, "")
+            if filter_value_raw != "":
+                filters = self.build_filter(fields, filter_value_raw)
+                queryset = queryset.filter(*filters)
 
-        sort_value_raw = request.GET.get(self.sort_param_name, "")
-        if sort_value_raw != "":
-            sort_value = self.build_sort(fields, sort_value_raw)
-            if sort_value:
-                queryset = queryset.order_by(*sort_value)
+        if self.sort_param_name:
+            sort_value_raw = request.GET.get(self.sort_param_name, "")
+            if sort_value_raw != "":
+                sort_value = self.build_sort(fields, sort_value_raw)
+                if sort_value:
+                    queryset = queryset.order_by(*sort_value)
 
         #print queryset.query
         return queryset
