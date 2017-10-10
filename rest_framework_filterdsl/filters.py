@@ -1,6 +1,7 @@
 # encoding: utf8
 
 from rest_framework import filters
+from pyparsing import ParseException
 
 from django.db.models import Q, F, fields as model_fields
 
@@ -28,13 +29,18 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
         model_fields.BooleanField: casts.cast_boolean,
     }
 
-    def __init__(self):
-        pass
-
     def get_filterable_fields(self, model):
+        """Returns all fields of the model accessible to the filtering.
+
+        The default is using all fields for which casts are defined. This method
+        may be overriden in subclasses to implement any other field selection"""
         return dict([(f.name, f) for f in model._meta.fields if f.__class__ in self.value_casts])
 
     def _value_cast(self, field, value):
+        """Cast the value for a field using the defined value_casts.
+
+        When no cast is defined, the value will be returned in its
+        original form."""
         try:
             cast_callable = self.value_casts[type(field)]
         except KeyError:
@@ -135,18 +141,24 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         fields = self.get_filterable_fields(queryset.model)
 
-        if self.filter_param_name:
-            filter_value_raw = request.GET.get(self.filter_param_name, "")
-            if filter_value_raw != "":
-                filters = self.build_filter(fields, filter_value_raw)
-                queryset = queryset.filter(*filters)
+        try:
+            if self.filter_param_name:
+                filter_value_raw = request.GET.get(self.filter_param_name, "")
+                if filter_value_raw != "":
+                    filters = self.build_filter(fields, filter_value_raw)
+                    queryset = queryset.filter(*filters)
+        except ParseException, e:
+            raise BadQuery("Filtering error: {0} (position: {1})".format(e.msg, e.col))
 
-        if self.sort_param_name:
-            sort_value_raw = request.GET.get(self.sort_param_name, "")
-            if sort_value_raw != "":
-                sort_value = self.build_sort(fields, sort_value_raw)
-                if sort_value:
-                    queryset = queryset.order_by(*sort_value)
+        try:
+            if self.sort_param_name:
+                sort_value_raw = request.GET.get(self.sort_param_name, "")
+                if sort_value_raw != "":
+                    sort_value = self.build_sort(fields, sort_value_raw)
+                    if sort_value:
+                        queryset = queryset.order_by(*sort_value)
+        except ParseException, e:
+            raise BadQuery("Sorting error: {0} (position: {1})".format(e.msg, e.col))
 
         #print queryset.query
         return queryset

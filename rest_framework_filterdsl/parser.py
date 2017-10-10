@@ -206,7 +206,6 @@ def build_sort_parser(field_names):
 
     sort_directive = Group(
                 Optional(plusorminus) + field
-            
     ).setParseAction(lambda x: SortDirective(x))
 
     statement = Optional(sort_directive) + ZeroOrMore(
