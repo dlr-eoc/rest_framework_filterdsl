@@ -1,6 +1,6 @@
 # encoding: utf8
 
-from rest_framework import filters, exceptions
+from rest_framework import filters
 
 from django.db.models import Q, F, fields as model_fields
 

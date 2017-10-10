@@ -1,6 +1,8 @@
 # encoding: utf8
 
-from pyparsing import *
+from pyparsing import CaselessKeyword, Combine, Group, Keyword, \
+         Literal, MatchFirst, nums, Optional, Or, QuotedString, \
+         Word, ZeroOrMore
 
 from .exceptions import BadQuery
 from .base import BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES
