@@ -21,6 +21,27 @@ class Token(object):
     def get(self):
         return self.value()
 
+class GroupToken(Token):
+    tokens = []
+
+    def __init__(self, tokens):
+        self.tokens = list(itertools.chain(*tokens))
+
+    def _filter_class(self, token_class):
+        return [t for t in self.tokens if isinstance(t, token_class)]
+
+    def _filter_class_first(self, token_class):
+        for t in self.tokens:
+            if isinstance(t, token_class):
+                return t
+
+    def __repr__(self):
+        return "{0}({1})".format(
+                self.__class__.__name__,
+                ' '.join([repr(t) for t in self.tokens])
+        )
+
+
 class Field(Token):
     @property
     def name(self):
@@ -52,20 +73,7 @@ class LogicalOp(Token):
     def op(self):
         return self.value.lower()
 
-class Comparison(Token):
-    tokens = []
-
-    def __init__(self, tokens):
-        self.tokens = list(itertools.chain(*tokens))
-
-    def __repr__(self):
-        return "{0}({1})".format(
-                self.__class__.__name__,
-                ' '.join([repr(t) for t in self.tokens])
-        )
-
-    def _filter_class(self, token_class):
-        return [t for t in self.tokens if isinstance(t, token_class)]
+class Comparison(GroupToken):
 
     @property
     def fields(self):
@@ -73,19 +81,30 @@ class Comparison(Token):
 
     @property
     def operator(self):
-        for t in self.tokens:
-            if isinstance(t, Operator):
-                return t
+        return self._filter_class_first(Operator)
 
     @property
     def values(self):
         return self._filter_class(Value)
 
+class SortDirection(Token):
+    pass
+
+class SortDirective(GroupToken):
+    @property
+    def field(self):
+        return self._filter_class_first(Field)
+    
+    @property
+    def direction(self):
+        return self._filter_class_first(SortDirection) or SortDirection('+')
 
 def _build_field_expr(field_names):
     field = MatchFirst([CaselessKeyword(field_name) for field_name in field_names])
     field.setParseAction(lambda x: Field(x[0]))
     return field
+
+
 
 def build_filter_parser(field_names):
     field = _build_field_expr(field_names)
@@ -106,11 +125,15 @@ def build_filter_parser(field_names):
         )
     comparison_operator.setParseAction(lambda x: Operator(x[0]))
 
-    num_integer = Word(nums)
+    plusorminus = Literal('+') | Literal('-')
+
+    num_integer = Combine(
+            Optional(plusorminus) + Word(nums)
+    )
     num_integer.setParseAction(lambda x: Integer(x[0]))
 
     num_float = Combine(
-            Word(nums) + '.' + Word(nums)
+            Optional(plusorminus) + Word(nums) + '.' + Word(nums)
     )
     num_float.setParseAction(lambda x: Float(x[0]))
 
@@ -147,18 +170,28 @@ def build_filter_parser(field_names):
     )
 
     logical_op = Group(
-            CaselessKeyword("and")
-            | CaselessKeyword("or")
+            CaselessKeyword("and") | CaselessKeyword("or")
     )
     logical_op.setParseAction(lambda x: LogicalOp(x[0][0]))
 
-    statement = (comparison | invalid_comparison) + ZeroOrMore(
+    statement = Optional(comparison | invalid_comparison) + ZeroOrMore(
                 logical_op + (comparison | invalid_comparison)
     )
     return statement
 
 
-#result = statement.parseString("'2333' = name or is_bird = true and age >= 34", parseAll=True)
+def build_sort_parser(field_names):
+    field = _build_field_expr(field_names)
 
+    plusorminus = Literal('+') | Literal('-')
+    plusorminus.setParseAction(lambda x: SortDirection(x[0]))
 
-#print result.asList()
+    sort_directive = Group(
+                Optional(plusorminus) + field
+            
+    ).setParseAction(lambda x: SortDirective(x))
+
+    statement = Optional(sort_directive) + ZeroOrMore(
+            Literal(',') + sort_directive
+    )
+    return statement

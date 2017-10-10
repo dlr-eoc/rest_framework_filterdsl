@@ -18,7 +18,7 @@ def make_simple_cast(cast_func, name):
             ))
     return cast
 
-cast_int = make_simple_cast(int, 'integer')
+cast_int = make_simple_cast(lambda v: int(float(v)), 'integer')
 cast_float = make_simple_cast(float, 'float')
 cast_date = make_simple_cast(date_parser, 'date')
 cast_datetime = make_simple_cast(date_parser, 'datetime')

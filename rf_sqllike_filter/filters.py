@@ -9,11 +9,12 @@ from . import casts, parser
 
 
 class SQLLikeFilterBackend(filters.BaseFilterBackend):
-    filter_param_name = 'filter'
-    sort_param_name = 'sort'
 
-    parsed_filter = []
-    parsed_sort = []
+    # name of the GET parameter used for filtering
+    filter_param_name = 'filter'
+
+    # name of the GET parameter used for filtering
+    sort_param_name = 'sort'
 
     # cast functions for the different types of database model fields
     value_casts = {
@@ -40,9 +41,8 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
             return value
         return cast_callable(value, field)
 
-    def build_filter(self, model, filter_value_raw):
+    def build_filter(self, fields, filter_value_raw):
         filters = []
-        fields = self.get_filterable_fields(model)
         filter_parser = parser.build_filter_parser(fields.keys())
 
         def require_text_fields(parser_fields, operator_name):
@@ -113,21 +113,38 @@ class SQLLikeFilterBackend(filters.BaseFilterBackend):
                 elif join_op.op == 'and':
                     filters.append(f)
                 else:
-                    raise BadQuery("Unsupporteed logical operator \"{0}\"".format(join_op.op))
+                    raise BadQuery("Unsupported logical operator \"{0}\"".format(join_op.op))
             elif isinstance(q, parser.LogicalOp):
                 join_op = q
             else:
                 raise BadQuery("Unsupported element: \"{0}\"".format(type(q)))
-
         return filters
 
+    def build_sort(self, fields, sort_value_raw):
+        sort_value = []
+        sort_parser = parser.build_sort_parser(fields.keys())
+
+        for q in sort_parser.parseString(sort_value_raw, parseAll=True).asList():
+            if isinstance(q, parser.SortDirective):
+                prefix = ''
+                if q.direction.value == '-':
+                    prefix = '-'
+                sort_value.append("{0}{1}".format(prefix, q.field.name))
+        return sort_value
+
     def filter_queryset(self, request, queryset, view):
+        fields = self.get_filterable_fields(queryset.model)
 
         filter_value_raw = request.GET.get(self.filter_param_name, "")
         if filter_value_raw != "":
-            filters = self.build_filter(queryset.model, filter_value_raw)
-            #print filters
+            filters = self.build_filter(fields, filter_value_raw)
             queryset = queryset.filter(*filters)
+
+        sort_value_raw = request.GET.get(self.sort_param_name, "")
+        if sort_value_raw != "":
+            sort_value = self.build_sort(fields, sort_value_raw)
+            if sort_value:
+                queryset = queryset.order_by(*sort_value)
 
         #print queryset.query
         return queryset

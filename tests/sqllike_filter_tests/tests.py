@@ -38,10 +38,17 @@ class BaseTestCase(TestCase):
         self.url_animal_list = reverse('animal-list')
 
 
-class TestSQLLikeFilters(BaseTestCase):
+class TestFilters(BaseTestCase):
 
     def test_get_unfiltered(self):
         response = self.client.get(self.url_animal_list)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+
+    def test_get_empty_filter(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': ''
+        })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)
 
@@ -52,6 +59,13 @@ class TestSQLLikeFilters(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'tortoise')
+
+    def test_get_filtered_equal_negative_int(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "age = -3"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
 
     def test_get_filtered_equal_int(self):
         response = self.client.get(self.url_animal_list, data={
@@ -104,3 +118,46 @@ class TestSQLLikeFilters(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'duck')
+
+
+class TestSorting(BaseTestCase):
+
+    def test_sort_by_name_no_direction(self):
+        response = self.client.get(self.url_animal_list, data={
+                'sort': "name"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], 'dog')
+        self.assertEqual(response.data[1]['name'], 'duck')
+        self.assertEqual(response.data[2]['name'], 'tortoise')
+
+    def test_sort_by_name_direction_plus(self):
+        response = self.client.get(self.url_animal_list, data={
+                'sort': "+name"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], 'dog')
+        self.assertEqual(response.data[1]['name'], 'duck')
+        self.assertEqual(response.data[2]['name'], 'tortoise')
+
+    def test_sort_by_name_direction_minus(self):
+        response = self.client.get(self.url_animal_list, data={
+                'sort': "-name"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], 'tortoise')
+        self.assertEqual(response.data[1]['name'], 'duck')
+        self.assertEqual(response.data[2]['name'], 'dog')
+
+    def test_sort_by_multicolumn(self):
+        response = self.client.get(self.url_animal_list, data={
+                'sort': "-legs, name"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]['name'], 'dog')
+        self.assertEqual(response.data[1]['name'], 'tortoise')
+        self.assertEqual(response.data[2]['name'], 'duck')
