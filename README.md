@@ -125,17 +125,17 @@ can be used like in the following example:
 
 
     from rest_framework import generics
-    from rest_framework_filterdsl import SQLLikeFilterBackend
+    from rest_framework_filterdsl import FilterDSLBackend
     ...
 
     class MyListView(generics.ListAPIView):
         ...
-        filter_backends = (SQLLikeFilterBackend,)
+        filter_backends = (FilterDSLBackend,)
         ...
 
 
 Settings like the names of the GET parameters or the casts for the user-provided
-values can be customized by subclassing the `SQLLikeFilterBackend` implementation.
+values can be customized by subclassing the `FilterDSLBackend` implementation.
 
 
 For more example usage please also see the unittests of this repository. Additional

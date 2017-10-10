@@ -9,7 +9,7 @@ from .exceptions import BadQuery
 from . import casts, parser
 
 
-class SQLLikeFilterBackend(filters.BaseFilterBackend):
+class FilterDSLBackend(filters.BaseFilterBackend):
 
     # name of the GET parameter used for filtering
     filter_param_name = 'filter'
