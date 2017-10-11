@@ -27,20 +27,20 @@ below. Some of these filters can be negated with the optional keyword `not`, to 
 which operators support negation also see the table below.
 
 
-| Filter operator | Meaning | Negatable with "not" | Field type requirements |
-| --- | --- | --- | --- |
-| =      | "equal to" | no             | - |
-| !=    | "not equal to" | no             | - |
-| <      |"less than"|no             | - |
-| >      |"greater than"| no             | - |
-| <=      |"less than or equal to"| no             | - |
-| >=      |"greater than or equal to"| no | - |
-| contains | substring search (case sensitive) | yes | requires text or char fields |
-| icontains | substring search (case insensitive)| yes | requires text or char fields |
-| startswith | substring search at the beginning of the field value (case sensitive) | yes | requires text or char fields |
-| istartswith | substring search at the beginning of the field value (case insensitive)| yes | requires text or char fields |
-| endswith | substring search at the end of the field value (case sensitive) | yes | requires text or char fields |
-| iendswith | substring search at the end of the field value (case insensitive)| yes | requires text or char fields |
+| Filter operator | Alias | Meaning | Negatable with "not" | Field type requirements |
+| --- | --- | --- | --- | --- |
+| `=` | `eq` | "equal to" | `=` is not, but the `eq` alias is negatable | - |
+| `!=` | `not eq` | "not equal to" | no             | - |
+| `<` | `lt` |"less than"|no             | - |
+| `>` | `gt` |"greater than"| no             | - |
+| `<=` | `lte` |"less than or equal to"| no             | - |
+| `>=` | `gte` |"greater than or equal to"| no | - |
+| `contains` || substring search (case sensitive) | yes | requires text or char fields |
+| `icontains` || substring search (case insensitive)| yes | requires text or char fields |
+| `startswith` || substring search at the beginning of the field value (case sensitive) | yes | requires text or char fields |
+| `istartswith` || substring search at the beginning of the field value (case insensitive)| yes | requires text or char fields |
+| `endswith` || substring search at the end of the field value (case sensitive) | yes | requires text or char fields |
+| `iendswith` || substring search at the end of the field value (case insensitive)| yes | requires text or char fields |
 
 It is possible to combine multiple filters using the logical operators `and`
 and `or`. `or` has precedence over `and`.

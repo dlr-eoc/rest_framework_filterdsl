@@ -60,6 +60,14 @@ class TestFilters(BaseTestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'tortoise')
 
+    def test_get_filtered_equal_string_eq_alias(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "name eq 'tortoise'"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'tortoise')
+
     def test_get_filtered_equal_negative_int(self):
         response = self.client.get(self.url_animal_list, data={
                 'filter': "age = -3"
@@ -70,6 +78,15 @@ class TestFilters(BaseTestCase):
     def test_get_filtered_equal_int(self):
         response = self.client.get(self.url_animal_list, data={
                 'filter': "age = 132"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'tortoise')
+
+
+    def test_get_filtered_gte_int_gte_alias(self):
+        response = self.client.get(self.url_animal_list, data={
+                'filter': "age gte 132"
         })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)

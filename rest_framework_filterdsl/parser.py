@@ -116,8 +116,6 @@ def _build_field_expr(field_names):
     field.setParseAction(lambda x: Field(x[0]))
     return field
 
-
-
 def build_filter_parser(field_names):
     field = _build_field_expr(field_names)
 
@@ -131,6 +129,10 @@ def build_filter_parser(field_names):
             ^ Keyword('<=')
             ^ Keyword('<')
             ^ Keyword('>')
+            ^ Keyword('lte') # match before lt
+            ^ Keyword('lt')
+            ^ Keyword('gte') # match before gt
+            ^ Keyword('gt')
             ^ (Optional(negation) + (
                     CaselessKeyword('contains')
                     ^ CaselessKeyword('icontains')
@@ -138,6 +140,7 @@ def build_filter_parser(field_names):
                     ^ CaselessKeyword('istartswith')
                     ^ CaselessKeyword('endswith')
                     ^ CaselessKeyword('iendswith')
+                    ^ CaselessKeyword('eq')
                     )
              )
         )

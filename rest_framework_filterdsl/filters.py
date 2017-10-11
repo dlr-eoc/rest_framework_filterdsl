@@ -71,36 +71,45 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
                 # find the matching operator in djangos ORM syntax
                 model_op = None
-                negate = op.negate
+                negate = False
                 if op.op == "=":
                     model_op = "exact"
                 elif op.op == "!=":
                     model_op = "exact"
                     negate = True
-                elif op.op == ">":
+                elif op.op in (">", "gt"):
                     model_op = "gt"
-                elif op.op == ">=":
+                elif op.op in (">=", "gte"):
                     model_op = "gte"
-                elif op.op == "<":
+                elif op.op in ("<", "lt"):
                     model_op = "lt"
-                elif op.op == "<=":
+                elif op.op in ("<=", "lte"):
                     model_op = "lte"
+                elif op.op == "eq":
+                    negate = op.negate
+                    model_op = "exact"
                 elif op.op == 'contains':
+                    negate = op.negate
                     require_text_fields(q_fields, 'contains')
                     model_op = 'contains'
                 elif op.op == 'icontains':
+                    negate = op.negate
                     require_text_fields(q_fields, 'icontains')
                     model_op = 'icontains'
                 elif op.op == 'startswith':
+                    negate = op.negate
                     require_text_fields(q_fields, 'startswith')
                     model_op = 'startswith'
                 elif op.op == 'istartswith':
+                    negate = op.negate
                     require_text_fields(q_fields, 'istartswith')
                     model_op = 'istartswith'
                 elif op.op == 'endswith':
+                    negate = op.negate
                     require_text_fields(q_fields, 'endswith')
                     model_op = 'endswith'
                 elif op.op == 'iendswith':
+                    negate = op.negate
                     require_text_fields(q_fields, 'iendswith')
                     model_op = 'iendswith'
                 else:
