@@ -29,7 +29,10 @@ MIDDLEWARE_CLASSES = [
 ROOT_URLCONF = 'urls'
 
 TIME_ZONE = 'Europe/Berlin'
-LANGUAGE_CODE = 'en-gb'
+LANGUAGE_CODE = 'en-us'
+LANGUAGES = (
+        ('en-us', 'English')
+)
 USE_TZ = True
 USE_I18N = False
 USE_L10N = False

@@ -1,0 +1,2 @@
+pytest-django>=3.0
+pytest-pythonpath>=0.7
