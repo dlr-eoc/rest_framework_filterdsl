@@ -45,6 +45,8 @@ which operators support negation also see the table below.
 It is possible to combine multiple filters using the logical operators `and`
 and `or`. `or` has precedence over `and`.
 
+The default name of the GET parameter for filtering is `filter`.
+
 ### Sorting
 
 The basic sorting syntax is
@@ -60,6 +62,8 @@ Multiple sorting operations can be chained by separating them with `,`. The
 first terms will be used first for the ordering, then the following term(s)
 will be used.
 
+The default name of the GET parameter for sorting is `sort`.
+
 ### Example queries
 
 The queries in this section use the API provided by the unittest
@@ -67,55 +71,27 @@ application in the `tests` directory of this repository.
 
 The queries need to be correctly escaped before being send. The ones
 listed further down this section are listed un-escaped for a better
-readability. Escape should happen in the following form:
-
-    GET /animal?filter=age+<+legs
-
-should be escaped to become:
+readability. Escape should happen in the following form: `age < legs` should be
+escaped to become:
 
     GET /animal?filter=age+%3C+legs
 
-
-Now to the examples:
-
-    # an empty filter
-    GET /animal?filter=
-
-    # match an integer field
-    GET /animal?filter=age+=+132
-
-    # match the boolean field "is_bird" to be true
-    GET /animal?filter=is_bird+=+true
-
-    # compare a timestamp
-    GET /animal?filter=birthday+<+'2007-10-13T11:13:09.250219+00:00'
-
-    # combine multiple filters with "OR"
-    GET /animal?filter=name+=+'tortoise'+or+name+=+'dog'
-
-    # sort by the "legs" field in descending order and name in ascending order
-    GET /animal?sort=-legs,+name
-
-    # sort by the field "name" in descending order
-    GET /animal?sort=-name
-
-    # explict sort by the field "name" in ascending order
-    GET /animal?sort=+name
-
-    # implicit sort by the field "name" in ascending order
-    GET /animal?sort=name
-
-    # compare the fields "age" and "legs"
-    GET /animal?filter=age+<+legs
-
-    # match the field name to contain the substring "rtoi"
-    GET /animal?filter=name+contains+'rtoi'
-
-    # match the field name to NOT contain the substring "rtoi"
-    GET /animal?filter=name+not+contains+'rtoi'
-
-    # combination of filtering and sorting
-    GET /animal?filter=name+startswith+'d'&sort=-id
+| Description | Filter query | Sort query |
+| --- | --- | --- |
+| An empty filter | | |
+| Match an integer field | age = 132 ||
+| Match the boolean field "is_bird" to be true | is_bird = true ||
+| Compare a timestamp | birthday < '2007-10-13T11:13:09.250219+00:00' ||
+| Chain multiple filters with "AND" | name = 'tortoise' and age >= 100 ||
+| Chain multiple filters with "OR" | name = 'tortoise' or name = 'dog' ||
+| Implicit sort by the field "name" in ascending order || name |
+| Explicit sort by the field "name" in ascending order || +name |
+| Sort by the field "name" in descending order || -name |
+| Sort by the "legs" field in descending order and name in ascending order || -legs,+name |
+| Compare the two fields "age" and "legs" | age < legs ||
+| Match the field name to contain the substring "rtoi" | name contains 'rtoi' ||
+| Match the field name to NOT contain the substring "rtoi" | name not contains 'rtoi' ||
+| Combination of filtering and sorting | name startswith 'd' | sort=-id |
 
 
 ## Using this module in your application
