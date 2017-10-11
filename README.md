@@ -118,6 +118,11 @@ For more example usage please also see the unittests of this repository. Additio
 the REST framework [filtering documentation](http://www.django-rest-framework.org/api-guide/filtering/) may
 be helpful.
 
+# Unittests
+
+This projects includes a set of unittests implemented using
+[pytest](https://docs.pytest.org/en/latest/index.html). To run these use the
+`runtests.sh` script.
 # License
 
 See [LICENCE.txt](LICENCE.txt).
