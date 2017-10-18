@@ -1,4 +1,4 @@
 #!/bin/bash
 
 pushd tests
-pytest -vvv $*
+pytest -s -vvv $*

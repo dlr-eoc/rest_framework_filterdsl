@@ -8,6 +8,22 @@ from .exceptions import BadQuery
 from .base import BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES
 
 import itertools
+try:
+    from functools import lru_cache
+except ImportError:
+    # python <= 3.2
+    try:
+        from functools32 import lru_cache
+    except:
+        # no caching
+        def lru_cache():
+            '''do-nothing lru_cache implementation'''
+            def decorator(fn):
+                def wrapper(*a, **kw):
+                    return fn(*a, **kw)
+                return wrapper
+            return decorator
+
 
 def fail(msg):
     raise BadQuery(msg)
@@ -117,6 +133,11 @@ def _build_field_expr(field_names):
     return field
 
 def build_filter_parser(field_names):
+    # use tuple argument to have an implemented __hash__ method for the lru_cache
+    return _build_filter_parser(tuple(field_names))
+
+@lru_cache()
+def _build_filter_parser(field_names):
     field = _build_field_expr(field_names)
 
     negation = CaselessKeyword('not')
@@ -202,6 +223,11 @@ def build_filter_parser(field_names):
 
 
 def build_sort_parser(field_names):
+    # use tuple argument to have an implemented __hash__ method for the lru_cache
+    return _build_sort_parser(tuple(field_names))
+
+@lru_cache()
+def _build_sort_parser(field_names):
     field = _build_field_expr(field_names)
 
     plusorminus = Literal('+') | Literal('-')
