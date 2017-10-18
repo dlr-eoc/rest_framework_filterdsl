@@ -156,7 +156,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                 if filter_value_raw != "":
                     filters = self.build_filter(fields, filter_value_raw)
                     queryset = queryset.filter(*filters)
-        except ParseException, e:
+        except ParseException as e:
             raise BadQuery("Filtering error: {0} (position: {1})".format(e.msg, e.col))
 
         try:
@@ -166,7 +166,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                     sort_value = self.build_sort(fields, sort_value_raw)
                     if sort_value:
                         queryset = queryset.order_by(*sort_value)
-        except ParseException, e:
+        except ParseException as e:
             raise BadQuery("Sorting error: {0} (position: {1})".format(e.msg, e.col))
 
         #print queryset.query

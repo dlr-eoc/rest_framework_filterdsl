@@ -9,7 +9,7 @@ def make_simple_cast(cast_func, name):
     def cast(value, field):
         try:
             return cast_func(value.strip())
-        except ValueError, e:
+        except ValueError as e:
             raise BadValue("Can not parse {0} value \"{1}\" for field \"{2}\": {3}".format(
                         name,
                         value,
