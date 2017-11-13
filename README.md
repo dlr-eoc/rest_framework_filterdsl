@@ -125,4 +125,4 @@ This projects includes a set of unittests implemented using
 `runtests.sh` script.
 # License
 
-See [LICENCE.txt](LICENCE.txt).
+See [LICENSE.txt](LICENSE.txt).
