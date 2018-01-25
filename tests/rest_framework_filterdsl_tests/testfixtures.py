@@ -2,7 +2,12 @@
 
 import pytest
 
-from django.core.urlresolvers import reverse_lazy
+try:
+    # django 2.0+
+    from django.urls import reverse_lazy
+except ImportError:
+    # django 1.x
+    from django.core.urlresolvers import reverse_lazy
 from django.utils import timezone
 
 from datetime import timedelta
