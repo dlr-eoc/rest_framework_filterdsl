@@ -35,7 +35,8 @@ def animal_data(db):
                 age=132,
                 legs=4,
                 birthday=timezone.now() - timedelta(days=365*132),
-                is_bird=False
+                is_bird=False,
+                favorite_food='tomato'
         )
         models.AnimalModel.objects.create(
                 name="duck",

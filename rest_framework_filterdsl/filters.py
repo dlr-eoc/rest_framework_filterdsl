@@ -67,7 +67,8 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                 if len(q_fields) > 1:
                     right = F(q_fields[1].name)
                 else:
-                    right = self._value_cast(fields[left.name], q.values[0].value)
+                    if len(q.values) != 0:
+                        right = self._value_cast(fields[left.name], q.values[0].value)
 
                 # find the matching operator in djangos ORM syntax
                 model_op = None
@@ -112,6 +113,10 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                     negate = op.negate
                     require_text_fields(q_fields, 'iendswith')
                     model_op = 'iendswith'
+                elif op.op == 'isnull':
+                    negate = op.negate
+                    model_op = 'isnull'
+                    right = True # negation happens using ~
                 else:
                     raise BadQuery("Unsupported operator: \"{0}\"".format(op.op))
 

@@ -41,6 +41,7 @@ which operators support negation also see the table below.
 | `istartswith` || substring search at the beginning of the field value (case insensitive)| yes | requires text or char fields |
 | `endswith` || substring search at the end of the field value (case sensitive) | yes | requires text or char fields |
 | `iendswith` || substring search at the end of the field value (case insensitive)| yes | requires text or char fields |
+| `isnull` || value must be NULL | yes | - |
 
 It is possible to combine multiple filters using the logical operators `and`
 and `or`. `or` has precedence over `and`.
@@ -81,6 +82,8 @@ escaped to become:
 | An empty filter | | |
 | Match an integer field | age = 132 ||
 | Match the boolean field "is_bird" to be true | is_bird = true ||
+| Match NULL values | favorite_food isnull ||
+| Match Non-NULL values | favorite_food not isnull ||
 | Compare a timestamp | birthday < '2007-10-13T11:13:09.250219+00:00' ||
 | Chain multiple filters with "AND" | name = 'tortoise' and age >= 100 ||
 | Chain multiple filters with "OR" | name = 'tortoise' or name = 'dog' ||

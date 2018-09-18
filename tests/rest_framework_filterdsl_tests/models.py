@@ -8,3 +8,4 @@ class AnimalModel(models.Model):
     legs = models.IntegerField()
     birthday = models.DateTimeField()
     is_bird = models.BooleanField()
+    favorite_food = models.CharField(max_length=100, null=True)

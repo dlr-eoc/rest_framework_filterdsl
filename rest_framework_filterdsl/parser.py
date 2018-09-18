@@ -167,6 +167,12 @@ def _build_filter_parser(field_names):
         )
     comparison_operator.setParseAction(lambda x: Operator(x))
 
+    single_value_operator = Group(
+            CaselessKeyword('isnull')
+            ^  (Optional(negation) + CaselessKeyword('isnull'))
+    )
+    single_value_operator.setParseAction(lambda x: Operator(x))
+
     plusorminus = Literal('+') | Literal('-')
 
     num_integer = Combine(
@@ -200,6 +206,7 @@ def _build_filter_parser(field_names):
             (field + comparison_operator + value)
             ^ (value + comparison_operator + field)
             ^ (field + comparison_operator + field)
+            ^ (field + single_value_operator)
     )
     comparison.setParseAction(lambda x: Comparison(x))
 

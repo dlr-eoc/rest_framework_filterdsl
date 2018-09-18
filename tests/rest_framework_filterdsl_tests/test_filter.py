@@ -157,3 +157,25 @@ def test_get_filtered_compare_fields(animal_get, animal_data, op):
     assert response.status_code == 200
     assert len(response.data) == 1
     assert response.data[0]['name'] == 'duck'
+
+@pytest.mark.django_db
+def test_get_filtered_isnull(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "favorite_food isnull"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 2
+    animals = set([x['name'] for x in response.data])
+    assert set(('dog', 'duck')) == animals
+
+
+@pytest.mark.django_db
+def test_get_filtered_not_isnull(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "favorite_food not isnull"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['name'] == 'tortoise'
