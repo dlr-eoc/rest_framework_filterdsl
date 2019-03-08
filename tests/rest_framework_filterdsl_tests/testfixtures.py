@@ -10,7 +10,7 @@ except ImportError:
     from django.core.urlresolvers import reverse_lazy
 from django.utils import timezone
 
-from datetime import timedelta
+from datetime import timedelta, time
 
 from . import models
 
@@ -28,7 +28,8 @@ def animal_data(db):
                 age=5,
                 legs=4,
                 birthday=timezone.now() - timedelta(days=365*5),
-                is_bird=False
+                is_bird=False,
+                feeding_time=time(hour=10),
         )
         models.AnimalModel.objects.create(
                 name="tortoise",
@@ -36,13 +37,15 @@ def animal_data(db):
                 legs=4,
                 birthday=timezone.now() - timedelta(days=365*132),
                 is_bird=False,
-                favorite_food='tomato'
+                favorite_food='tomato',
+                feeding_time=time(hour=15),
         )
         models.AnimalModel.objects.create(
                 name="duck",
                 age=1,
                 legs=2,
                 birthday=timezone.now() - timedelta(days=365*3),
-                is_bird=True
+                is_bird=True,
+                feeding_time=time(hour=20),
         )
     return create

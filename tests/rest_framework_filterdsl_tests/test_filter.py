@@ -130,6 +130,17 @@ def test_get_filtered_less_than_datettime_year(animal_get, animal_data):
 
 
 @pytest.mark.django_db
+def test_get_filtered_less_than_time_hour(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "feeding_time__hour < 12"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['name'] == 'dog'
+
+
+@pytest.mark.django_db
 def test_get_filtered_contains_string(animal_get, animal_data):
     animal_data()
     response = animal_get({

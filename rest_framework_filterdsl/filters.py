@@ -45,7 +45,15 @@ class FilterDSLBackend(filters.BaseFilterBackend):
             'week': model_fields.IntegerField,
             'week_day': model_fields.IntegerField,
             'time': model_fields.TimeField,
+            'hour': model_fields.IntegerField,
+            'minute': model_fields.IntegerField,
+            'second': model_fields.IntegerField,
         },
+        model_fields.TimeField: {
+            'hour': model_fields.IntegerField,
+            'minute': model_fields.IntegerField,
+            'second': model_fields.IntegerField,
+        }
     }
 
     def get_filterable_fields(self, model):

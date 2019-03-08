@@ -7,5 +7,6 @@ class AnimalModel(models.Model):
     age = models.IntegerField()
     legs = models.IntegerField()
     birthday = models.DateTimeField()
+    feeding_time = models.TimeField()
     is_bird = models.BooleanField()
     favorite_food = models.CharField(max_length=100, null=True)
