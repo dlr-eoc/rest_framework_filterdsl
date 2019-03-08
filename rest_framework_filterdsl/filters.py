@@ -219,7 +219,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                     filter = self.build_filter(fields, filter_value_raw)
                     queryset = queryset.filter(filter)
         except ParseException as e:
-            raise BadQuery("Filtering error: {0} (position: {1})".format(e.msg, e.col))
+            raise BadQuery("Filtering position: {0}".format(e.col))
 
         try:
             if self.sort_param_name:
@@ -229,7 +229,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                     if sort_value:
                         queryset = queryset.order_by(*sort_value)
         except ParseException as e:
-            raise BadQuery("Sorting error: {0} (position: {1})".format(e.msg, e.col))
+            raise BadQuery("Sorting error position: {0}".format(e.col))
 
         #print queryset.query
         return queryset
