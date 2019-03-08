@@ -20,6 +20,9 @@ class FilterDSLBackend(filters.BaseFilterBackend):
     # cast functions for the different types of database model fields
     value_casts = {
         model_fields.IntegerField: casts.cast_int,
+        model_fields.SmallIntegerField: casts.cast_int,
+        model_fields.PositiveIntegerField: casts.cast_int,
+        model_fields.PositiveSmallIntegerField: casts.cast_int,
         model_fields.AutoField: casts.cast_int,
         model_fields.FloatField: casts.cast_float,
         model_fields.DateField: casts.cast_date,
