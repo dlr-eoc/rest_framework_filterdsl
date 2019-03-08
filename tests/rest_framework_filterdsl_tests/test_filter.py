@@ -115,6 +115,20 @@ def test_get_filtered_less_than_datettime(animal_get, animal_data, op):
     assert len(response.data) == 1
     assert response.data[0]['name'] == 'tortoise'
 
+
+@pytest.mark.django_db
+def test_get_filtered_less_than_datettime_year(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "birthday__year < '{0}'".format(
+                    (timezone.now()-timedelta(days=365*10)).year
+            )
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['name'] == 'tortoise'
+
+
 @pytest.mark.django_db
 def test_get_filtered_contains_string(animal_get, animal_data):
     animal_data()

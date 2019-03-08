@@ -27,6 +27,25 @@ class FilterDSLBackend(filters.BaseFilterBackend):
         model_fields.TextField: casts.cast_text,
         model_fields.CharField: casts.cast_text,
         model_fields.BooleanField: casts.cast_boolean,
+        model_fields.TimeField: casts.cast_time,
+    }
+    lookups = {
+        model_fields.DateField: {
+            'year': model_fields.IntegerField,
+            'month': model_fields.IntegerField,
+            'day': model_fields.IntegerField,
+            'week': model_fields.IntegerField,
+            'week_day': model_fields.IntegerField,
+        },
+        model_fields.DateTimeField: {
+            'date': model_fields.DateField,
+            'year': model_fields.IntegerField,
+            'month': model_fields.IntegerField,
+            'day': model_fields.IntegerField,
+            'week': model_fields.IntegerField,
+            'week_day': model_fields.IntegerField,
+            'time': model_fields.TimeField,
+        },
     }
 
     def get_filterable_fields(self, model):
@@ -34,7 +53,16 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
         The default is using all fields for which casts are defined. This method
         may be overriden in subclasses to implement any other field selection"""
-        return dict([(f.name, f) for f in model._meta.fields if f.__class__ in self.value_casts])
+        fields = dict([(f.name, f) for f in model._meta.fields if f.__class__ in self.value_casts])
+
+        lookup_fields = {}
+        for field_name, field in fields.items():
+            lookups = self.lookups.get(field.__class__, {})
+            for lookup_name, cast_type in lookups.items():
+                lookup_fields['{}__{}'.format(field_name, lookup_name)] = cast_type
+        fields.update(lookup_fields)
+
+        return fields
 
     def _value_cast(self, field, value):
         """Cast the value for a field using the defined value_casts.
