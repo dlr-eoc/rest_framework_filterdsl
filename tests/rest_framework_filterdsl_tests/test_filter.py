@@ -179,3 +179,13 @@ def test_get_filtered_not_isnull(animal_get, animal_data):
     assert response.status_code == 200
     assert len(response.data) == 1
     assert response.data[0]['name'] == 'tortoise'
+
+
+@pytest.mark.django_db
+def test_get_filtered_parenthesis(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "is_bird = true or ((age = 5 or name = 'dog') and legs = 4)"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 2

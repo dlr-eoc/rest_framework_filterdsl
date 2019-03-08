@@ -2,7 +2,7 @@
 
 from pyparsing import CaselessKeyword, Combine, Group, Keyword, \
          Literal, MatchFirst, nums, Optional, Or, QuotedString, \
-         Word, ZeroOrMore
+         Word, ZeroOrMore, Forward
 
 from .exceptions import BadQuery
 from .base import BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES
@@ -115,6 +115,9 @@ class Comparison(GroupToken):
     def values(self):
         return self._filter_class(Value)
 
+class Statement(Token):
+    pass
+
 class SortDirection(Token):
     pass
 
@@ -223,10 +226,17 @@ def _build_filter_parser(field_names):
     )
     logical_op.setParseAction(lambda x: LogicalOp(x[0][0]))
 
-    statement = Optional(comparison | invalid_comparison) + ZeroOrMore(
-                logical_op + (comparison | invalid_comparison)
+    expr = Forward()
+    statement = (
+            comparison
+            | invalid_comparison
+            | (Literal('(').suppress() + expr + Literal(')').suppress())
     )
-    return statement
+    statement.setParseAction(lambda x: Statement(x))
+
+    expr << statement + ZeroOrMore(logical_op + statement)
+
+    return expr
 
 
 def build_sort_parser(field_names):

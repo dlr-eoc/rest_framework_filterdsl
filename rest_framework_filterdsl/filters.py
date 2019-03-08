@@ -47,9 +47,8 @@ class FilterDSLBackend(filters.BaseFilterBackend):
             return value
         return cast_callable(value, field)
 
-    def build_filter(self, fields, filter_value_raw):
-        filters = []
-        filter_parser = parser.build_filter_parser(fields.keys())
+    def parse_parts(self, parts, fields):
+        filters = Q()
 
         def require_text_fields(parser_fields, operator_name):
             for pf in parser_fields:
@@ -57,8 +56,19 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                     raise BadQuery("The operator \"{0}\" is only allowed with text fields".format(operator_name))
 
         join_op = parser.LogicalOp('and')
-        for q in filter_parser.parseString(filter_value_raw, parseAll=True).asList():
-            if isinstance(q, parser.Comparison):
+
+        for q in parts:
+            if isinstance(q, parser.Statement):
+                f = self.parse_parts(q.value, fields)
+                if join_op.op == 'or':
+                    filters |= f
+                elif join_op.op == 'and':
+                    filters &= f
+                else:
+                    raise BadQuery(
+                        "Unsupported logical operator \"{0}\"".format(
+                            join_op.op))
+            elif isinstance(q, parser.Comparison):
                 q_fields = q.fields
                 left = q_fields[0]
                 op = q.operator
@@ -129,9 +139,9 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                 # add the new filter to the existing filterset
                 # "or" has precedence over "and"
                 if join_op.op == 'or':
-                    filters[-1] = filters[-1] | f
+                    filters |= f
                 elif join_op.op == 'and':
-                    filters.append(f)
+                    filters &= f
                 else:
                     raise BadQuery("Unsupported logical operator \"{0}\"".format(join_op.op))
             elif isinstance(q, parser.LogicalOp):
@@ -139,6 +149,14 @@ class FilterDSLBackend(filters.BaseFilterBackend):
             else:
                 raise BadQuery("Unsupported element: \"{0}\"".format(type(q)))
         return filters
+
+    def build_filter(self, fields, filter_value_raw):
+        filter_parser = parser.build_filter_parser(fields.keys())
+
+        return self.parse_parts(
+            filter_parser.parseString(filter_value_raw, parseAll=True).asList(),
+            fields,
+        )
 
     def build_sort(self, fields, sort_value_raw):
         sort_value = []
@@ -159,8 +177,8 @@ class FilterDSLBackend(filters.BaseFilterBackend):
             if self.filter_param_name:
                 filter_value_raw = request.GET.get(self.filter_param_name, "")
                 if filter_value_raw != "":
-                    filters = self.build_filter(fields, filter_value_raw)
-                    queryset = queryset.filter(*filters)
+                    filter = self.build_filter(fields, filter_value_raw)
+                    queryset = queryset.filter(filter)
         except ParseException as e:
             raise BadQuery("Filtering error: {0} (position: {1})".format(e.msg, e.col))
 
