@@ -71,7 +71,10 @@ class FilterDSLBackend(filters.BaseFilterBackend):
             lookups = self.lookups.get(field.__class__, {})
             for lookup_name, cast_type in lookups.items():
                 lookup_fields['{}__{}'.format(field_name, lookup_name)] = cast_type
-        fields.update(lookup_fields)
+        fields.update(
+            lookup_fields,
+            **getattr(model, 'filtering_lookups', {}),
+        )
 
         return fields
 
