@@ -32,6 +32,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
         model_fields.CharField: casts.cast_text,
         model_fields.BooleanField: casts.cast_boolean,
         model_fields.TimeField: casts.cast_time,
+        model_fields.DecimalField: casts.cast_decimal,
     }
     lookups = {
         model_fields.DateField: {
