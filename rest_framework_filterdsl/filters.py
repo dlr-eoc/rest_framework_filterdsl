@@ -19,6 +19,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
     # cast functions for the different types of database model fields
     value_casts = {
+        model_fields.EmailField: casts.cast_text,
         model_fields.IntegerField: casts.cast_int,
         model_fields.SmallIntegerField: casts.cast_int,
         model_fields.PositiveIntegerField: casts.cast_int,
@@ -94,7 +95,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
         def require_text_fields(parser_fields, operator_name):
             for pf in parser_fields:
-                if type(fields[pf.name]) not in (model_fields.TextField, model_fields.CharField):
+                if type(fields[pf.name]) not in (model_fields.TextField, model_fields.CharField, model_fields.EmailField):
                     raise BadQuery("The operator \"{0}\" is only allowed with text fields".format(operator_name))
 
         join_op = parser.LogicalOp('and')
