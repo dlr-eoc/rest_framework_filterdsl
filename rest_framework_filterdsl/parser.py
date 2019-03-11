@@ -1,8 +1,8 @@
 # encoding: utf8
 
 from pyparsing import CaselessKeyword, Combine, Group, Keyword, \
-         Literal, MatchFirst, nums, Optional, Or, QuotedString, \
-         Word, ZeroOrMore, Forward
+         Literal, nums, Optional, Or, QuotedString, \
+         Word, ZeroOrMore, Forward, alphanums
 
 from .exceptions import BadQuery
 from .base import BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES
@@ -137,18 +137,17 @@ class SortDirective(GroupToken):
     def direction(self):
         return self._filter_class_first(SortDirection) or SortDirection('+')
 
-def _build_field_expr(field_names):
-    field = MatchFirst([CaselessKeyword(field_name) for field_name in field_names])
+def _build_field_expr():
+    field = Word(alphanums+'_')
     field.setParseAction(lambda x: Field(x[0]))
     return field
 
-def build_filter_parser(field_names):
-    # use tuple argument to have an implemented __hash__ method for the lru_cache
-    return _build_filter_parser(tuple(field_names))
+def build_filter_parser():
+    return _build_filter_parser()
 
 @lru_cache()
-def _build_filter_parser(field_names):
-    field = _build_field_expr(field_names)
+def _build_filter_parser():
+    field = _build_field_expr()
 
     negation = CaselessKeyword('not')
     negation.setParseAction(lambda x: Negation(x[0]))
@@ -209,6 +208,7 @@ def _build_filter_parser(field_names):
     value = (
             quoted_string
             ^ num_integer
+            ^ num_float
             ^ boolean
     )
 
@@ -246,13 +246,12 @@ def _build_filter_parser(field_names):
     return expr
 
 
-def build_sort_parser(field_names):
-    # use tuple argument to have an implemented __hash__ method for the lru_cache
-    return _build_sort_parser(tuple(field_names))
+def build_sort_parser():
+    return _build_sort_parser()
 
 @lru_cache()
-def _build_sort_parser(field_names):
-    field = _build_field_expr(field_names)
+def _build_sort_parser():
+    field = _build_field_expr()
 
     plusorminus = Literal('+') | Literal('-')
     plusorminus.setParseAction(lambda x: SortDirection(x[0]))

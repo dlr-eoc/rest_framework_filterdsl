@@ -36,6 +36,7 @@ def animal_data(db):
                 birthday=timezone.now() - timedelta(days=365*5),
                 is_bird=False,
                 feeding_time=time(hour=10),
+                temperature='1.1',
                 owner=a_person,
                 keeper=a_person,
         )
@@ -47,6 +48,7 @@ def animal_data(db):
                 is_bird=False,
                 favorite_food='tomato',
                 feeding_time=time(hour=15),
+                temperature='1.2',
                 owner=a_person,
                 keeper=a_person,
         )
@@ -57,6 +59,7 @@ def animal_data(db):
                 birthday=timezone.now() - timedelta(days=365*3),
                 is_bird=True,
                 feeding_time=time(hour=20),
+                temperature='1.3',
                 owner=b_person,
                 keeper=b_person,
         )
