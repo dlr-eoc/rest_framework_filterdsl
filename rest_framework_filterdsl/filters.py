@@ -6,7 +6,7 @@ from pyparsing import ParseException
 from django.db.models import Q, F, fields as model_fields
 
 from .exceptions import BadQuery
-from . import casts, parser
+from . import parser
 
 
 class FilterDSLBackend(filters.BaseFilterBackend):
@@ -19,45 +19,45 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
     # cast functions for the different types of database model fields
     value_casts = {
-        model_fields.EmailField: casts.cast_text,
-        model_fields.IntegerField: casts.cast_int,
-        model_fields.SmallIntegerField: casts.cast_int,
-        model_fields.PositiveIntegerField: casts.cast_int,
-        model_fields.PositiveSmallIntegerField: casts.cast_int,
-        model_fields.AutoField: casts.cast_int,
-        model_fields.FloatField: casts.cast_float,
-        model_fields.DateField: casts.cast_date,
-        model_fields.DateTimeField: casts.cast_datetime,
-        model_fields.TextField: casts.cast_text,
-        model_fields.CharField: casts.cast_text,
-        model_fields.BooleanField: casts.cast_boolean,
-        model_fields.TimeField: casts.cast_time,
-        model_fields.DecimalField: casts.cast_decimal,
+        model_fields.EmailField,
+        model_fields.IntegerField,
+        model_fields.SmallIntegerField,
+        model_fields.PositiveIntegerField,
+        model_fields.PositiveSmallIntegerField,
+        model_fields.AutoField,
+        model_fields.FloatField,
+        model_fields.DateField,
+        model_fields.DateTimeField,
+        model_fields.TextField,
+        model_fields.CharField,
+        model_fields.BooleanField,
+        model_fields.TimeField,
+        model_fields.DecimalField,
     }
     lookups = {
         model_fields.DateField: {
-            'year': model_fields.IntegerField,
-            'month': model_fields.IntegerField,
-            'day': model_fields.IntegerField,
-            'week': model_fields.IntegerField,
-            'week_day': model_fields.IntegerField,
+            'year': model_fields.IntegerField(),
+            'month': model_fields.IntegerField(),
+            'day': model_fields.IntegerField(),
+            'week': model_fields.IntegerField(),
+            'week_day': model_fields.IntegerField(),
         },
         model_fields.DateTimeField: {
-            'date': model_fields.DateField,
-            'year': model_fields.IntegerField,
-            'month': model_fields.IntegerField,
-            'day': model_fields.IntegerField,
-            'week': model_fields.IntegerField,
-            'week_day': model_fields.IntegerField,
-            'time': model_fields.TimeField,
-            'hour': model_fields.IntegerField,
-            'minute': model_fields.IntegerField,
-            'second': model_fields.IntegerField,
+            'date': model_fields.DateField(),
+            'year': model_fields.IntegerField(),
+            'month': model_fields.IntegerField(),
+            'day': model_fields.IntegerField(),
+            'week': model_fields.IntegerField(),
+            'week_day': model_fields.IntegerField(),
+            'time': model_fields.TimeField(),
+            'hour': model_fields.IntegerField(),
+            'minute': model_fields.IntegerField(),
+            'second': model_fields.IntegerField(),
         },
         model_fields.TimeField: {
-            'hour': model_fields.IntegerField,
-            'minute': model_fields.IntegerField,
-            'second': model_fields.IntegerField,
+            'hour': model_fields.IntegerField(),
+            'minute': model_fields.IntegerField(),
+            'second': model_fields.IntegerField(),
         }
     }
 
@@ -81,15 +81,9 @@ class FilterDSLBackend(filters.BaseFilterBackend):
         return fields
 
     def _value_cast(self, field, value):
-        """Cast the value for a field using the defined value_casts.
-
-        When no cast is defined, the value will be returned in its
-        original form."""
-        try:
-            cast_callable = self.value_casts[type(field)]
-        except KeyError:
-            return value
-        return cast_callable(value, field)
+        """Cast the value for a field using the field to_python method.
+        """
+        return field.to_python(value)
 
     def parse_parts(self, parts, fields):
         filters = Q()

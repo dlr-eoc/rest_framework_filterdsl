@@ -29,15 +29,15 @@ def fail(msg):
     raise BadQuery(msg)
 
 class Token(object):
-    value = None
     def __init__(self, value):
-        self.value = value
+        self._value = value
 
     def __repr__(self):
         return "{0}({1})".format(self.__class__.__name__, self.value)
 
-    def get(self):
-        return self.value()
+    @property
+    def value(self):
+        return self._value
 
 class GroupToken(Token):
     tokens = []
@@ -94,7 +94,14 @@ class Float(Value):
     pass
 
 class Boolean(Value):
-    pass
+    @property
+    def value(self):
+        value = self._value.lower()
+        if value in BOOLEAN_TRUE_VALUES:
+            return True
+        if value in BOOLEAN_FALSE_VALUES:
+            return False
+        return value
 
 class LogicalOp(Token):
     @property
