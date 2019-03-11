@@ -80,7 +80,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
         def require_text_fields(parser_fields, operator_name):
             for pf in parser_fields:
-                if type(fields[pf.name]) not in (model_fields.TextField, model_fields.CharField, model_fields.EmailField):
+                if not (isinstance(fields[pf.name], model_fields.CharField) or isinstance(fields[pf.name], model_fields.TextField)):
                     raise BadQuery("The operator \"{0}\" is only allowed with text fields".format(operator_name))
 
         join_op = parser.LogicalOp('and')
