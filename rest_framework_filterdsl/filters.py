@@ -1,9 +1,12 @@
 # encoding: utf8
 
-from rest_framework import filters
+from rest_framework import filters, exceptions as rest_exceptions
 from pyparsing import ParseException
 
+from django.core import exceptions as django_exceptions
 from django.db.models import Q, F, fields as model_fields
+from django.db.models.fields import related
+from rest_framework.serializers import as_serializer_error
 
 from .exceptions import BadQuery
 from . import parser
@@ -17,23 +20,6 @@ class FilterDSLBackend(filters.BaseFilterBackend):
     # name of the GET parameter used for filtering
     sort_param_name = 'sort'
 
-    # cast functions for the different types of database model fields
-    value_casts = {
-        model_fields.EmailField,
-        model_fields.IntegerField,
-        model_fields.SmallIntegerField,
-        model_fields.PositiveIntegerField,
-        model_fields.PositiveSmallIntegerField,
-        model_fields.AutoField,
-        model_fields.FloatField,
-        model_fields.DateField,
-        model_fields.DateTimeField,
-        model_fields.TextField,
-        model_fields.CharField,
-        model_fields.BooleanField,
-        model_fields.TimeField,
-        model_fields.DecimalField,
-    }
     lookups = {
         model_fields.DateField: {
             'year': model_fields.IntegerField(),
@@ -66,13 +52,14 @@ class FilterDSLBackend(filters.BaseFilterBackend):
 
         The default is using all fields for which casts are defined. This method
         may be overriden in subclasses to implement any other field selection"""
-        fields = dict([(f.name, f) for f in model._meta.fields if f.__class__ in self.value_casts])
+        fields = dict([(f.name, f) for f in model._meta.fields if not isinstance(f, related.RelatedField)])
 
         lookup_fields = {}
         for field_name, field in fields.items():
             lookups = self.lookups.get(field.__class__, {})
             for lookup_name, cast_type in lookups.items():
                 lookup_fields['{}__{}'.format(field_name, lookup_name)] = cast_type
+
         fields.update(
             lookup_fields,
             **getattr(model, 'filtering_lookups', {}),
@@ -83,7 +70,10 @@ class FilterDSLBackend(filters.BaseFilterBackend):
     def _value_cast(self, field, value):
         """Cast the value for a field using the field to_python method.
         """
-        return field.to_python(value)
+        try:
+            return field.to_python(value)
+        except django_exceptions.ValidationError as exc:
+            raise rest_exceptions.ValidationError(detail=as_serializer_error(exc))
 
     def parse_parts(self, parts, fields):
         filters = Q()
