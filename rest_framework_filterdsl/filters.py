@@ -50,7 +50,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
     def get_filterable_fields(self, model):
         """Returns all fields of the model accessible to the filtering.
 
-        The default is using all fields for which casts are defined. This method
+        The default is using all nonrelational fields. This method
         may be overriden in subclasses to implement any other field selection"""
         fields = dict([(f.name, f) for f in model._meta.fields if not isinstance(f, related.RelatedField)])
 
