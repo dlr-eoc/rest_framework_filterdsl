@@ -1,8 +1,8 @@
 # encoding: utf8
 
 from pyparsing import CaselessKeyword, Combine, Group, Keyword, \
-         Literal, MatchFirst, nums, Optional, Or, QuotedString, \
-         Word, ZeroOrMore
+         Literal, nums, Optional, Or, QuotedString, \
+         Word, ZeroOrMore, Forward, alphanums
 
 from .exceptions import BadQuery
 from .base import BOOLEAN_TRUE_VALUES, BOOLEAN_FALSE_VALUES
@@ -29,15 +29,15 @@ def fail(msg):
     raise BadQuery(msg)
 
 class Token(object):
-    value = None
     def __init__(self, value):
-        self.value = value
+        self._value = value
 
     def __repr__(self):
         return "{0}({1})".format(self.__class__.__name__, self.value)
 
-    def get(self):
-        return self.value()
+    @property
+    def value(self):
+        return self._value
 
 class GroupToken(Token):
     tokens = []
@@ -94,7 +94,14 @@ class Float(Value):
     pass
 
 class Boolean(Value):
-    pass
+    @property
+    def value(self):
+        value = self._value.lower()
+        if value in BOOLEAN_TRUE_VALUES:
+            return True
+        if value in BOOLEAN_FALSE_VALUES:
+            return False
+        return value
 
 class LogicalOp(Token):
     @property
@@ -115,6 +122,9 @@ class Comparison(GroupToken):
     def values(self):
         return self._filter_class(Value)
 
+class Statement(Token):
+    pass
+
 class SortDirection(Token):
     pass
 
@@ -127,18 +137,17 @@ class SortDirective(GroupToken):
     def direction(self):
         return self._filter_class_first(SortDirection) or SortDirection('+')
 
-def _build_field_expr(field_names):
-    field = MatchFirst([CaselessKeyword(field_name) for field_name in field_names])
+def _build_field_expr():
+    field = Word(alphanums+'_')
     field.setParseAction(lambda x: Field(x[0]))
     return field
 
-def build_filter_parser(field_names):
-    # use tuple argument to have an implemented __hash__ method for the lru_cache
-    return _build_filter_parser(tuple(field_names))
+def build_filter_parser():
+    return _build_filter_parser()
 
 @lru_cache()
-def _build_filter_parser(field_names):
-    field = _build_field_expr(field_names)
+def _build_filter_parser():
+    field = _build_field_expr()
 
     negation = CaselessKeyword('not')
     negation.setParseAction(lambda x: Negation(x[0]))
@@ -199,6 +208,7 @@ def _build_filter_parser(field_names):
     value = (
             quoted_string
             ^ num_integer
+            ^ num_float
             ^ boolean
     )
 
@@ -223,19 +233,25 @@ def _build_filter_parser(field_names):
     )
     logical_op.setParseAction(lambda x: LogicalOp(x[0][0]))
 
-    statement = Optional(comparison | invalid_comparison) + ZeroOrMore(
-                logical_op + (comparison | invalid_comparison)
+    expr = Forward()
+    statement = (
+            comparison
+            | invalid_comparison
+            | (Literal('(').suppress() + expr + Literal(')').suppress())
     )
-    return statement
+    statement.setParseAction(lambda x: Statement(x))
+
+    expr << statement + ZeroOrMore(logical_op + statement)
+
+    return expr
 
 
-def build_sort_parser(field_names):
-    # use tuple argument to have an implemented __hash__ method for the lru_cache
-    return _build_sort_parser(tuple(field_names))
+def build_sort_parser():
+    return _build_sort_parser()
 
 @lru_cache()
-def _build_sort_parser(field_names):
-    field = _build_field_expr(field_names)
+def _build_sort_parser():
+    field = _build_field_expr()
 
     plusorminus = Literal('+') | Literal('-')
     plusorminus.setParseAction(lambda x: SortDirection(x[0]))

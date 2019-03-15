@@ -116,6 +116,28 @@ def test_get_filtered_less_than_datettime(animal_get, animal_data, op):
     assert response.data[0]['name'] == 'tortoise'
 
 @pytest.mark.django_db
+def test_get_filtered_less_than_datettime_year(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "birthday__year < '{0}'".format(
+                    (timezone.now()-timedelta(days=365*10)).year
+            )
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['name'] == 'tortoise'
+
+@pytest.mark.django_db
+def test_get_filtered_less_than_time_hour(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "feeding_time__hour < 12"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+    assert response.data[0]['name'] == 'dog'
+
+@pytest.mark.django_db
 def test_get_filtered_contains_string(animal_get, animal_data):
     animal_data()
     response = animal_get({
@@ -169,7 +191,6 @@ def test_get_filtered_isnull(animal_get, animal_data):
     animals = set([x['name'] for x in response.data])
     assert set(('dog', 'duck')) == animals
 
-
 @pytest.mark.django_db
 def test_get_filtered_not_isnull(animal_get, animal_data):
     animal_data()
@@ -179,3 +200,39 @@ def test_get_filtered_not_isnull(animal_get, animal_data):
     assert response.status_code == 200
     assert len(response.data) == 1
     assert response.data[0]['name'] == 'tortoise'
+
+@pytest.mark.django_db
+def test_get_filtered_parenthesis(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "is_bird = true or ((age = 5 or name = 'dog') and legs = 4)"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 2
+
+@pytest.mark.django_db
+def test_get_filtered_compare_two_fields(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "age < legs"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+
+@pytest.mark.django_db
+def test_get_filtered_decimal(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "temperature > 1.2"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1
+
+@pytest.mark.django_db
+def test_get_filtered_model_defined_filtering_lookups(animal_get, animal_data):
+    animal_data()
+    response = animal_get({
+            'filter': "owner__name istartswith 'b'"
+    })
+    assert response.status_code == 200
+    assert len(response.data) == 1

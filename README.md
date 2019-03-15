@@ -44,7 +44,7 @@ which operators support negation also see the table below.
 | `isnull` || value must be NULL | yes | - |
 
 It is possible to combine multiple filters using the logical operators `and`
-and `or`. `or` has precedence over `and`.
+and `or`. `or` has precedence over `and`. It is also possible to use parenthesis: `(` and `)`.
 
 The default name of the GET parameter for filtering is `filter`.
 
