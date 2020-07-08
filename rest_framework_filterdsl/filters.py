@@ -92,7 +92,7 @@ class FilterDSLBackend(filters.BaseFilterBackend):
                     raise BadQuery("Unsupported operator: \"{0}\"".format(op.op))
 
                 f = Q(**{
-                    "{0}__{1}".format(left.name, model_op): right
+                    "{0}__{1}".format(left.value, model_op): right
                 })
                 if negate:
                     f = ~f
